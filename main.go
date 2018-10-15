@@ -73,6 +73,8 @@ func main() {
 			n = 3
 		case parts[0] == "golang.org" && parts[1] == "x":
 			n = 3
+		case parts[0] == "gonum.org":
+			n = 3
 		case parts[0] == "gopkg.in":
 			if gopkginVersion.MatchString(parts[1]) { // gopkg.in/pkg.v3/BLABLA syntax
 				n = 2
