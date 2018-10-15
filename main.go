@@ -18,7 +18,7 @@ const (
 	kubeBranch     = "release-1.12"
 	clientGoBranch = "release-9.0"
 
-	boilerplate = "# Constraints below have been generated using https://github.com/ash2k/kubegodep2dep\n" + //
+	boilerplate = "# Overrides below have been generated using https://github.com/ash2k/kubegodep2dep\n" + //
 		"# Do not edit manually\n"
 )
 
@@ -37,10 +37,10 @@ type dep struct {
 }
 
 type depManifest struct {
-	Constraints []constraint `toml:"constraint"`
+	Overrides []override `toml:"override"`
 }
 
-type constraint struct {
+type override struct {
 	Name     string `toml:"name"`
 	Branch   string `toml:"branch,omitempty"`
 	Revision string `toml:"revision,omitempty"`
@@ -88,28 +88,28 @@ func main() {
 		ordered = append(ordered, depKey)
 	}
 	sort.Strings(ordered)
-	constraints := make([]constraint, 0, len(ordered))
+	overrides := make([]override, 0, len(ordered))
 	for _, depkey := range ordered {
 		d := deps[depkey]
-		var c constraint
+		var c override
 		switch {
 		case d.branch != "":
-			c = constraint{
+			c = override{
 				Name:   depkey,
 				Branch: d.branch,
 			}
 		case d.revision != "":
-			c = constraint{
+			c = override{
 				Name:     depkey,
 				Revision: d.revision,
 			}
 		default:
 			panic(errors.New("unreachable"))
 		}
-		constraints = append(constraints, c)
+		overrides = append(overrides, c)
 	}
 	m := depManifest{
-		Constraints: constraints,
+		Overrides: overrides,
 	}
 	data, err := toml.Marshal(m)
 	if err != nil {
