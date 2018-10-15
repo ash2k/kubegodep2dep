@@ -4,6 +4,10 @@ The purpose of this tool is to generate (a part of) `Gopkg.toml` file that can b
 [`dep`](https://golang.github.io/dep/) package manager in a project that wants to use
 Kubernetes' libraries compatible with a particular Kubernetes version and among each other.
 
+The huge benefit is that **exactly** the same dependency revisions are used. That means the set
+of dependency versions that you get have been tested by Kubernetes unit, integration and
+end-to-end tests plus real world usage so it is guaranteed to work.
+
 Managing constraints and/or overrides by hand is a huge PITA so why not generate them?
 
 ## Usage
