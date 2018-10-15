@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -20,6 +21,10 @@ const (
 
 	boilerplate = "# Overrides below have been generated using https://github.com/ash2k/kubegodep2dep\n" + //
 		"# Do not edit manually\n"
+)
+
+var (
+	gopkginVersion = regexp.MustCompile("\\.v\\d+(\\.\\d+){0,2}$")
 )
 
 type Dependency struct {
@@ -58,18 +63,29 @@ func main() {
 	deps := predeclaredDeps()
 	for _, d := range g.Deps {
 		var depKey string
+		var n int
 		// k8s.io/kube-openapi/pkg/util/proto/validation -> k8s.io kube-openapi pkg util/proto/validation
 		parts := strings.SplitN(d.ImportPath, "/", 4)
-		switch {
+		switch { // This is not ideal, fix as needed
 		case parts[0] == "github.com":
-			depKey = path.Join(parts[:3]...) // join 3 first parts
+			n = 3
+		case parts[0] == "bitbucket.org":
+			n = 3
 		case parts[0] == "golang.org" && parts[1] == "x":
-			depKey = path.Join(parts[:3]...) // join 3 first parts
+			n = 3
+		case parts[0] == "gopkg.in":
+			if gopkginVersion.MatchString(parts[1]) { // gopkg.in/pkg.v3/BLABLA syntax
+				n = 2
+			} else if gopkginVersion.MatchString(parts[2]) { // gopkg.in/user/pkg.v3/BLABLA syntax
+				n = 3
+			} else {
+				log.Fatalf("Unsupported syntax %s", d.ImportPath)
+			}
 		default:
-			// This is not ideal, fix as needed
-			depKey = path.Join(parts[:2]...) // join 2 first parts
-
+			n = 2
 		}
+		depKey = path.Join(parts[:n]...) // join n first parts
+
 		existingD, ok := deps[depKey]
 		if ok {
 			log.Printf("Already there: import key %s with import path %s", depKey, d.ImportPath)
