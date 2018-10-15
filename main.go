@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ghodss/yaml"
+	toml "github.com/pelletier/go-toml"
 )
 
 const (
@@ -37,13 +37,13 @@ type dep struct {
 }
 
 type depManifest struct {
-	Constraints []constraint
+	Constraints []constraint `toml:"constraint"`
 }
 
 type constraint struct {
-	Name     string `json:"name"`
-	Branch   string `json:"branch,omitempty"`
-	Revision string `json:"revision,omitempty"`
+	Name     string `toml:"name"`
+	Branch   string `toml:"branch,omitempty"`
+	Revision string `toml:"revision,omitempty"`
 }
 
 func main() {
@@ -111,7 +111,7 @@ func main() {
 	m := depManifest{
 		Constraints: constraints,
 	}
-	data, err := yaml.Marshal(&m)
+	data, err := toml.Marshal(m)
 	if err != nil {
 		log.Fatal(err)
 	}
