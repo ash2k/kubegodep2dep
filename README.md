@@ -11,18 +11,17 @@ end-to-end tests plus real world usage so it is guaranteed to work.
 Managing constraints and/or overrides by hand is a huge PITA so why not generate them?
 
 ## Usage
+See the [compatibility-matrix](https://github.com/kubernetes/client-go#compatibility-matrix) to get an overview, which `client-go` version works with what Kubernetes release.
 
-1. Download `Godeps.json` of a particular Kubernetes version you want to use. Pick a tag or a branch.
-For 1.12:
-```console
-curl -o Godeps.json https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.12/Godeps/Godeps.json
-```
-2. Install the binary from this repository:
-```console
-go get -u github.com/ash2k/kubegodep2dep
-```
-3. Run the tool:
-```console
-kubegodep2dep -godep ./Godeps.json > Gopkg-new.toml
-```
-4. Add other dependencies that your project needs and use `dep ensure` to pull them all down.
+1. Install the binary from this repository:
+    ```console
+    go get -u github.com/ash2k/kubegodep2dep
+    ```
+
+1. Run the tool:
+    ```console
+    kubegodep2dep -kube-branch release-1.12 -client-go-branch release-9.0 > Gopkg-new.toml
+    ```
+    You can use `-godep` to pass another `Godep.json` other than the default file into the tool. URLs are supported as input, too.
+
+1. Add other dependencies that your project needs and use `dep ensure` to pull them all down.
