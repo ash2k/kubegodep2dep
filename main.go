@@ -205,7 +205,7 @@ func getBytesFromLocation(location string) ([]byte, error) {
 
 		data, err := ioutil.ReadAll(response.Body)
 		if response.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("failed to retrieve data from %s", string(data))
+			return nil, fmt.Errorf("failed to retrieve data from location %s: %s", location, string(data))
 		}
 
 		return data, err
