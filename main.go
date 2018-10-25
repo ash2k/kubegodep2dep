@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"regexp"
@@ -16,8 +20,8 @@ import (
 )
 
 const (
-	kubeBranch     = "release-1.12"
-	clientGoBranch = "release-9.0"
+	defaultKubeBranch     = "release-1.12"
+	defaultClientGoBranch = "release-9.0"
 
 	boilerplate = "# Overrides below have been generated using https://github.com/ash2k/kubegodep2dep\n" + //
 		"# Do not edit manually\n"
@@ -52,15 +56,22 @@ type override struct {
 }
 
 func main() {
-	godepsPath := flag.String("godep", "", "Path to Godeps.json file")
+	kubeBranch := flag.String("kube-branch", defaultKubeBranch, "Kubernetes version based on their official tag names, e.g. release-1.12")
+	clientGoBranch := flag.String("client-go-branch", defaultClientGoBranch, "The kubernetes/client-go branch to be used, e.g. release-9.0")
+	godepsPath := flag.String("godep", "", "Path to Godeps.json file, if not specified a resonable default is used based on the kubernetes branch, e.g. https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.12/Godeps/Godeps.json")
 	flag.Parse()
+
+	// In case the Godeps.json location is not specified, use a constructed default location based on the kubernetes branch
+	if len(*godepsPath) == 0 {
+		*godepsPath = fmt.Sprintf("https://raw.githubusercontent.com/kubernetes/kubernetes/%s/Godeps/Godeps.json", url.PathEscape(*kubeBranch))
+	}
 
 	g, err := loadGodepsFile(*godepsPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	deps := predeclaredDeps()
+	deps := predeclaredDeps(*kubeBranch, *clientGoBranch)
 	for _, d := range g.Deps {
 		var depKey string
 		var n int
@@ -136,22 +147,22 @@ func main() {
 	fmt.Printf("%s\n%s\n", boilerplate, data)
 }
 
-func loadGodepsFile(path string) (*godeps, error) {
-	f, err := os.Open(path)
+func loadGodepsFile(location string) (*godeps, error) {
+	data, err := getBytesFromLocation(location)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+
 	var g godeps
-	err = json.NewDecoder(f).Decode(&g)
+	err = json.NewDecoder(bytes.NewReader(data)).Decode(&g)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse %s: %v", path, err)
+		return nil, fmt.Errorf("unable to parse %s: %v", location, err)
 	}
 	return &g, err
 }
 
 // predeclared dependencies for a particular kubernetes version
-func predeclaredDeps() map[string]dep {
+func predeclaredDeps(kubeBranch, clientGoBranch string) map[string]dep {
 	return map[string]dep{
 		"k8s.io/apiextensions-apiserver": {
 			branch: kubeBranch,
@@ -172,4 +183,35 @@ func predeclaredDeps() map[string]dep {
 			branch: kubeBranch,
 		},
 	}
+}
+
+func getBytesFromLocation(location string) ([]byte, error) {
+	// Handle special location "-" which referes to STDIN stream
+	if strings.TrimSpace(location) == "-" {
+		return ioutil.ReadAll(os.Stdin)
+	}
+
+	// Handle location as local file if there is a file at that location
+	if _, err := os.Stat(location); err == nil {
+		return ioutil.ReadFile(location)
+	}
+
+	// Handle location as a URI if it looks like one
+	if _, err := url.ParseRequestURI(location); err == nil {
+		response, err := http.Get(location)
+		if err != nil {
+			return nil, err
+		}
+		defer response.Body.Close()
+
+		data, err := ioutil.ReadAll(response.Body)
+		if response.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("failed to retrieve data from %s", string(data))
+		}
+
+		return data, err
+	}
+
+	// In any other case, bail out ...
+	return nil, fmt.Errorf("unable to get any content using location %s: it is not a file or usable URI", location)
 }
