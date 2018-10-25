@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	gopkginVersion = regexp.MustCompile("\\.v\\d+(\\.\\d+){0,2}$")
+	gopkginVersion = regexp.MustCompile(`\.v\d+(\.\d+){0,2}$`)
 )
 
 type Dependency struct {
