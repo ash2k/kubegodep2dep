@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -16,7 +15,7 @@ import (
 	"sort"
 	"strings"
 
-	toml "github.com/pelletier/go-toml"
+	"github.com/pelletier/go-toml"
 )
 
 const (
@@ -154,11 +153,11 @@ func loadGodepsFile(location string) (*godeps, error) {
 	}
 
 	var g godeps
-	err = json.NewDecoder(bytes.NewReader(data)).Decode(&g)
+	err = json.Unmarshal(data, &g)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse %s: %v", location, err)
 	}
-	return &g, err
+	return &g, nil
 }
 
 // predeclared dependencies for a particular kubernetes version
