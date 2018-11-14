@@ -93,6 +93,8 @@ func main() {
 			} else {
 				log.Fatalf("Unsupported syntax %s", d.ImportPath)
 			}
+		case parts[0] == "go4.org":
+			n = 1
 		default:
 			n = 2
 		}
