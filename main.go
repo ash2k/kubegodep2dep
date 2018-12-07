@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	defaultKubeBranch     = "release-1.12"
-	defaultClientGoBranch = "release-9.0"
+	defaultKubeBranch     = "release-1.13"
+	defaultClientGoBranch = "release-10.0"
 
 	boilerplate = "# Overrides below have been generated using https://github.com/ash2k/kubegodep2dep\n" + //
 		"# Do not edit manually\n"
