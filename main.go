@@ -55,8 +55,8 @@ type override struct {
 }
 
 func main() {
-	kubeBranch := flag.String("kube-branch", defaultKubeBranch, "Kubernetes version based on their official tag names, e.g. release-1.12")
-	clientGoBranch := flag.String("client-go-branch", defaultClientGoBranch, "The kubernetes/client-go branch to be used, e.g. release-9.0")
+	kubeBranch := flag.String("kube-branch", defaultKubeBranch, "Kubernetes version based on their official tag names")
+	clientGoBranch := flag.String("client-go-branch", defaultClientGoBranch, "The kubernetes/client-go branch to be used")
 	godepsPath := flag.String("godep", "", "Path to Godeps.json file, if not specified a resonable default is used based on the kubernetes branch, e.g. https://raw.githubusercontent.com/kubernetes/kubernetes/release-1.12/Godeps/Godeps.json")
 	flag.Parse()
 

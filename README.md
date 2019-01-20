@@ -20,7 +20,7 @@ See the [compatibility-matrix](https://github.com/kubernetes/client-go#compatibi
 
 1. Run the tool:
     ```console
-    kubegodep2dep -kube-branch release-1.12 -client-go-branch release-9.0 > Gopkg-new.toml
+    kubegodep2dep -kube-branch release-1.13 -client-go-branch release-10.0 > Gopkg-new.toml
     ```
     You can use `-godep` to pass another `Godep.json` other than the default file into the tool. URLs are supported as input, too.
 
